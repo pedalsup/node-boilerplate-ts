@@ -6,6 +6,7 @@ import {
   invalidPathHandler,
   requestLogger,
 } from "./middlewares/errorhandler";
+import publicRoutes from "./routes/public";
 
 const app = express();
 // parse json request body
@@ -21,7 +22,7 @@ app.options("*", cors());
 app.use(requestLogger);
 
 // api routes
-// app.use("/user", userRoutes);
+app.use("/user", publicRoutes);
 // app.use("/admin", adminRoutes);
 // app.use("/", commonRoutes);
 
