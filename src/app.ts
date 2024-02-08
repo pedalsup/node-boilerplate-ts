@@ -1,5 +1,11 @@
 import express from "express";
 import cors from "cors";
+import {
+  errorLogger,
+  errorResponder,
+  invalidPathHandler,
+  requestLogger,
+} from "./middlewares/errorhandler";
 
 const app = express();
 // parse json request body
@@ -12,19 +18,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.options("*", cors());
 
+app.use(requestLogger);
+
 // api routes
 // app.use("/user", userRoutes);
 // app.use("/admin", adminRoutes);
 // app.use("/", commonRoutes);
 
-// send back a 404 error for any unknown api request
-app.use("*", (req, res, next) => {
-  let message = {
-    status: 404,
-    message: "Requested API not found",
-    data: {},
-  };
-  return res.status(404).send(message);
-});
+app.use(errorLogger);
+app.use(errorResponder);
+app.use(invalidPathHandler);
 
 export default app;
