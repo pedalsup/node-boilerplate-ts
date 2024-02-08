@@ -6,7 +6,7 @@ import {
   OK,
 } from "http-status";
 import mongoose, { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
-import { Response } from "../types/common";
+import { Response } from "@/types/common";
 
 const getRecord = async <T>(
   collection: mongoose.Model<T>,

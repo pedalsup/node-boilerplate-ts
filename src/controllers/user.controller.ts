@@ -5,9 +5,9 @@ import {
   removeRecord,
   updateRecord,
 } from "./common.controller";
-import { User as UserType } from "../types/user";
-import { User } from "../models";
-import { trycatch } from "../middlewares/trycatch";
+import { User as UserType } from "@/types/user";
+import { User } from "@/models";
+import { trycatch } from "@/middlewares/trycatch";
 
 // GET /user
 const get = trycatch(async (req: Request, res: Response) => {

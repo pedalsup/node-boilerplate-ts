@@ -1,8 +1,7 @@
 import mongoose, { InferSchemaType } from "mongoose";
-import { collection } from "../utils/collections";
-import { DbUser } from "../types/user";
+import { collection } from "@/utils/collections";
 import bcrypt from "bcrypt";
-import { DbUserPreSave } from "../types/common";
+import { DbUser, DbUserPreSave } from "@/types/user";
 
 const schema = new mongoose.Schema<DbUser>(
   {

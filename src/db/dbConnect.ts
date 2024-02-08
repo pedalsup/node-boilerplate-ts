@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import CONFIG from "../utils/config";
+import config from "@/utils/config";
 
 const dbConnect = (callback = () => {}) => {
   mongoose
-    .connect(CONFIG.mongoUri as string)
+    .connect(config.mongoUri as string)
     .then(() => {
       console.log("Connected to Database...");
       callback();
