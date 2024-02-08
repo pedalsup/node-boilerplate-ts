@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { DbUser } from "./user";
 
 export type StringId = string;
 export type ObjectId = mongoose.Schema.Types.ObjectId;
@@ -32,10 +31,6 @@ export interface LookupOption {
   search?: string;
   limit?: number;
   enabled?: boolean;
-}
-
-export interface DbUserPreSave extends DbUser {
-  isModified: (arg0: string) => boolean;
 }
 
 export interface Response<T> {

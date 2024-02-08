@@ -13,3 +13,7 @@ export interface DbUser extends DbData, UserBase {
 export interface User extends Data, UserBase {
   address: string;
 }
+
+export interface DbUserPreSave extends DbUser {
+  isModified: (arg0: string) => boolean;
+}
