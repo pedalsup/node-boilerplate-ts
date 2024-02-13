@@ -1,27 +1,10 @@
 import mongoose, { Model } from "mongoose";
 import { collection } from "@/utils/collections";
 import bcrypt from "bcrypt";
-import { DbUser } from "@/types/user";
+import { DbUser, DbUserPreSave, DbUserMethods, UserModel } from "@/types/user";
 import { roles } from "@/config/roles";
 
-interface DbUserPreSave extends DbUser {
-  isModified: (arg0: string) => boolean;
-}
-
-interface IUserMethods {
-  isPasswordMatch(candidatePassword: string): string;
-}
-
-interface UserModel extends Model<DbUser, {}, IUserMethods> {
-  isUserExist(
-    email: string,
-    username: string,
-    address: string,
-    excludeUserId?: string
-  ): Promise<boolean>;
-}
-
-const schema = new mongoose.Schema<DbUser, UserModel, IUserMethods>(
+const schema = new mongoose.Schema<DbUser, UserModel, DbUserMethods>(
   {
     address: {
       type: String,
