@@ -53,7 +53,7 @@ const invalidPathHandler = (
 ) => {
   const response = {
     success: false,
-    message: "Requested API not found",
+    message: "API: Requested API not found",
     data: null,
     status: NOT_FOUND,
   };

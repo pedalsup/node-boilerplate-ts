@@ -5,7 +5,7 @@ const dbConnect = (callback = () => {}) => {
   mongoose
     .connect(config.mongoUri as string)
     .then(() => {
-      console.log("Connected to Database...");
+      console.log("Connected to Database");
       callback();
     })
     .catch((err) => {

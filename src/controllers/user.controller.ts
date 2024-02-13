@@ -1,25 +1,26 @@
 import { Request, Response } from "express";
-import { getRecord, removeRecord, updateRecord } from "./common.controller";
+import {
+  findOneRecord,
+  findRecord,
+  removeRecord,
+  updateRecord,
+} from "./common.controller";
 import { DbUser } from "@/types/user";
 import { User } from "@/models";
 import { trycatch } from "@/middlewares/trycatch";
-import { generateAuthTokens } from "@/services/token.service";
 import responseHandler from "@/utils/responseHandler";
 
-// GET /user
+// GET /user/:id
 const get = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const response = await findOneRecord<DbUser>(User, "USER", { _id: id });
 
-  const response = await getRecord<DbUser>(User, id);
+  return responseHandler(response, res);
+});
 
-  if (id && response.success) {
-    const tokens = await generateAuthTokens(response.data as DbUser);
-
-    response.data = {
-      user: response.data,
-      tokens,
-    };
-  }
+// GET /user
+const getAll = trycatch(async (req: Request, res: Response) => {
+  const response = await findRecord<DbUser>(User, "USER", {});
 
   return responseHandler(response, res);
 });
@@ -27,7 +28,7 @@ const get = trycatch(async (req: Request, res: Response) => {
 // PUT /user/:id
 const put = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const response = await updateRecord<DbUser>(User, req.body, id, {
+  const response = await updateRecord<DbUser>(User, "USER", req.body, id, {
     new: true,
   });
 
@@ -37,9 +38,9 @@ const put = trycatch(async (req: Request, res: Response) => {
 // DELETE /user/:id
 const remove = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const response = await removeRecord<DbUser>(User, id);
+  const response = await removeRecord<DbUser>(User, "USER", id);
 
   return responseHandler(response, res);
 });
 
-export { get, put, remove };
+export { get, getAll, put, remove };

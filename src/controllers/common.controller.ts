@@ -5,41 +5,55 @@ import {
   NOT_FOUND,
   OK,
 } from "http-status";
-import mongoose, { FilterQuery, QueryOptions, UpdateQuery } from "mongoose";
+import mongoose, {
+  AggregateOptions,
+  FilterQuery,
+  ObjectId,
+  PipelineStage,
+  ProjectionType,
+  QueryOptions,
+  UpdateQuery,
+} from "mongoose";
 import { Response } from "@/types/common";
+import { AppError } from "@/middlewares/errorhandler";
 
-const getRecord = async <T>(
+const findRecord = async <T>(
   collection: mongoose.Model<T>,
-  id?: string
+  log_id: string,
+  filterQuery: FilterQuery<T>,
+  projection?: ProjectionType<T>,
+  options?: QueryOptions<T>
 ): Promise<Response<T>> => {
-  let data;
-  if (id) {
-    data = await collection.findById(id);
+  const data = await collection.find(filterQuery, projection, options);
 
-    if (!data) {
-      return {
-        success: false,
-        message: "No data found",
-        data: {},
-        status: NOT_FOUND,
-      };
-    }
-  } else {
-    data = await collection.find();
-
-    if (data.length === 0) {
-      return {
-        success: false,
-        message: "No data found",
-        data: [],
-        status: NOT_FOUND,
-      };
-    }
+  if (data.length === 0) {
+    throw new AppError(NOT_FOUND, `${log_id}: Data not found`);
   }
 
   return {
     success: true,
-    message: "Data found",
+    message: `${log_id}: Data found`,
+    data,
+    status: OK,
+  };
+};
+
+const findOneRecord = async <T>(
+  collection: mongoose.Model<T>,
+  log_id: string,
+  filterQuery: FilterQuery<T>,
+  projection?: ProjectionType<T>,
+  options?: QueryOptions<T>
+): Promise<Response<T>> => {
+  const data = await collection.findOne(filterQuery, projection, options);
+
+  if (!data) {
+    throw new AppError(NOT_FOUND, `${log_id}: Data not found`);
+  }
+
+  return {
+    success: true,
+    message: `${log_id}: Data found`,
     data,
     status: OK,
   };
@@ -47,16 +61,19 @@ const getRecord = async <T>(
 
 const createRecord = async <T>(
   collection: mongoose.Model<T>,
+  log_id: string,
   payload: T,
-  filterQuery?: FilterQuery<T>
+  filterQuery?: FilterQuery<T>,
+  projection?: ProjectionType<T>,
+  options?: QueryOptions<T>
 ): Promise<Response<T>> => {
   if (filterQuery) {
-    const isExist = await collection.findOne(filterQuery);
+    const isExist = await collection.findOne(filterQuery, projection, options);
 
     if (isExist) {
       return {
         success: false,
-        message: "Data already exist",
+        message: `${log_id}: Data already exist`,
         data: {},
         status: CONFLICT,
       };
@@ -66,17 +83,12 @@ const createRecord = async <T>(
   const newData = await collection.create(payload);
 
   if (!newData) {
-    return {
-      success: false,
-      message: "Failed to create data",
-      data: {},
-      status: EXPECTATION_FAILED,
-    };
+    throw new AppError(EXPECTATION_FAILED, `${log_id}: Failed to create data`);
   }
 
   return {
     success: true,
-    message: "Data created",
+    message: `${log_id}: Data created`,
     data: newData,
     status: CREATED,
   };
@@ -84,24 +96,20 @@ const createRecord = async <T>(
 
 const updateRecord = async <T>(
   collection: mongoose.Model<T>,
+  log_id: string,
   payload: UpdateQuery<T>,
-  id: string,
-  options?: QueryOptions
+  id: ObjectId | any,
+  options?: QueryOptions<T>
 ): Promise<Response<T>> => {
   const updatedData = await collection.findByIdAndUpdate(id, payload, options);
 
   if (!updatedData) {
-    return {
-      success: false,
-      message: "Data not found",
-      data: {},
-      status: NOT_FOUND,
-    };
+    throw new AppError(NOT_FOUND, `${log_id}: Data not found`);
   }
 
   return {
     success: true,
-    message: "Data updated",
+    message: `${log_id}: Data updated`,
     data: updatedData,
     status: OK,
   };
@@ -109,22 +117,19 @@ const updateRecord = async <T>(
 
 const removeRecord = async <T>(
   collection: mongoose.Model<T>,
-  id: string
+  log_id: string,
+  id: ObjectId | any,
+  options?: QueryOptions<T>
 ): Promise<Response<T>> => {
-  const deletedData = await collection.findByIdAndDelete(id);
+  const deletedData = await collection.findByIdAndDelete(id, options);
 
   if (!deletedData) {
-    return {
-      success: false,
-      message: "Data not found",
-      data: {},
-      status: NOT_FOUND,
-    };
+    throw new AppError(NOT_FOUND, `${log_id}: Data not found`);
   }
 
   return {
     success: true,
-    message: "Data deleted",
+    message: `${log_id}: Data deleted`,
     data: deletedData,
     status: OK,
   };
@@ -132,25 +137,29 @@ const removeRecord = async <T>(
 
 const lookupRecord = async <T>(
   collection: mongoose.Model<T>,
-  pipeline: any[]
+  log_id: string,
+  pipeline: PipelineStage[],
+  options?: AggregateOptions
 ): Promise<Response<T>> => {
-  const data = await collection.aggregate(pipeline);
+  const data = await collection.aggregate(pipeline, options);
 
   if (data.length === 0) {
-    return {
-      success: false,
-      message: "No data found",
-      data: [],
-      status: NOT_FOUND,
-    };
+    throw new AppError(NOT_FOUND, `${log_id}: Data not found`);
   }
 
   return {
     success: true,
-    message: "Data found",
+    message: `${log_id}: Data found`,
     data,
     status: OK,
   };
 };
 
-export { getRecord, createRecord, updateRecord, removeRecord, lookupRecord };
+export {
+  findRecord,
+  findOneRecord,
+  createRecord,
+  updateRecord,
+  removeRecord,
+  lookupRecord,
+};

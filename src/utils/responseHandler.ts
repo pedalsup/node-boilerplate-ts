@@ -6,11 +6,16 @@ interface IResponse {
   data: any;
 }
 
-const responseHandler = (response: IResponse, res: Response) =>
+const responseHandler = (
+  response: IResponse,
+  res: Response,
+  message?: string,
+  data?: any
+) =>
   res.status(response.status).json({
     success: response.success,
-    message: response.message,
-    data: response.data,
+    message: message ?? response.message,
+    data: data ?? response.data,
   });
 
 export default responseHandler;

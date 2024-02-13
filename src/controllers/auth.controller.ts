@@ -9,8 +9,8 @@ import {
   verifyToken,
 } from "@/services/token.service";
 import responseHandler from "@/utils/responseHandler";
-import { CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "http-status";
-import { getRecord, updateRecord } from "./common.controller";
+import { CONFLICT, NOT_FOUND, OK, UNAUTHORIZED } from "http-status";
+import { createRecord, findOneRecord, updateRecord } from "./common.controller";
 import { DbUser } from "@/types/user";
 
 // POST /register
@@ -24,50 +24,47 @@ const register = trycatch(async (req: Request, res: Response) => {
   if (isUserExist) {
     const response = {
       success: false,
-      message: "User already exists",
+      message: "REGISTER: User already exists",
       data: {},
-      status: OK,
+      status: CONFLICT,
     };
 
     return responseHandler(response, res);
   }
 
-  const user = await User.create(req.body);
-  const tokens = await generateAuthTokens(user as DbUser);
+  // const user = await User.create(req.body);
+  const response = await createRecord<DbUser>(User, "REGISTER", req.body);
 
-  const response = {
-    success: true,
-    message: "Registered successfully",
-    data: { user, tokens },
-    status: CREATED,
-  };
+  const tokens = await generateAuthTokens(response.data as DbUser);
 
-  return responseHandler(response, res);
+  return responseHandler(response, res, "REGISTER: Registered successfully", {
+    user: response.data,
+    tokens,
+  });
 });
 
 // POST /login
 const login = trycatch(async (req: Request, res: Response) => {
   const user = await User.findOne({ email: req.body.email });
 
+  let response;
   if (!user || !(await user.isPasswordMatch(req.body.password))) {
-    const response = {
+    response = {
       success: false,
-      message: "Invalid credentials",
+      message: "LOGIN: Invalid credentials",
       data: {},
       status: UNAUTHORIZED,
     };
+  } else {
+    const tokens = await generateAuthTokens(user as DbUser);
 
-    return responseHandler(response, res);
+    response = {
+      success: true,
+      message: "LOGIN: Logged in successfully",
+      data: { user, tokens },
+      status: OK,
+    };
   }
-
-  const tokens = await generateAuthTokens(user as DbUser);
-
-  const response = {
-    success: true,
-    message: "Logged in successfully",
-    data: { user, tokens },
-    status: OK,
-  };
 
   return responseHandler(response, res);
 });
@@ -80,11 +77,10 @@ const logout = trycatch(async (req: Request, res: Response) => {
   });
 
   let response;
-
   if (!tokenDoc) {
     response = {
       success: false,
-      message: "Token Not found",
+      message: "LOGOUT: Token Not found",
       data: {},
       status: NOT_FOUND,
     };
@@ -93,7 +89,7 @@ const logout = trycatch(async (req: Request, res: Response) => {
 
     response = {
       success: true,
-      message: "Logged out successfully",
+      message: "LOGOUT: Logged out successfully",
       data: {},
       status: OK,
     };
@@ -106,23 +102,14 @@ const logout = trycatch(async (req: Request, res: Response) => {
 const refreshAuth = trycatch(async (req: Request, res: Response) => {
   const tokenDoc = await verifyToken(req.body.refreshToken, TOKEN_TYPE.REFRESH);
 
-  const responseUser = await getRecord<DbUser>(User, tokenDoc.user);
-
-  if (!responseUser.success) {
-    return responseHandler(responseUser, res);
-  }
+  const response = await findOneRecord<DbUser>(User, "REFRESH AUTH", {
+    _id: tokenDoc.user,
+  });
 
   await tokenDoc.deleteOne();
-  const tokens = await generateAuthTokens(responseUser.data as DbUser);
+  const tokens = await generateAuthTokens(response.data as DbUser);
 
-  const response = {
-    success: true,
-    message: "Auth refreshed",
-    data: tokens,
-    status: OK,
-  };
-
-  return responseHandler(response, res);
+  return responseHandler(response, res, "REFRESH AUTH: Auth refreshed", tokens);
 });
 
 // POST /forgot-password
@@ -133,7 +120,7 @@ const forgotPassword = trycatch(async (req: Request, res: Response) => {
 
   const response = {
     success: true,
-    message: "Please check your mail",
+    message: "FORGOT PASSWORD: Please check your mail",
     data: token,
     status: OK,
   };
@@ -150,16 +137,21 @@ const resetPassword = trycatch(async (req: Request, res: Response) => {
     TOKEN_TYPE.RESET_PASSWORD
   );
 
-  const responseUser = await getRecord<DbUser>(User, tokenDoc.user);
-  if (!responseUser.success) {
-    return responseHandler(responseUser, res);
+  const user = await User.findById(tokenDoc.user);
+
+  if (!user) {
+    const response = {
+      success: false,
+      message: "RESET PASSWORD: User not found",
+      data: {},
+      status: NOT_FOUND,
+    };
+
+    return responseHandler(response, res);
   }
 
-  await updateRecord<DbUser>(
-    User,
-    { password: req.body.newPassword },
-    tokenDoc.user
-  );
+  user.password = req.body.password;
+  await user.save();
 
   await Token.deleteMany({
     user: tokenDoc.user,
@@ -168,7 +160,7 @@ const resetPassword = trycatch(async (req: Request, res: Response) => {
 
   const response = {
     success: true,
-    message: "Password reset successfully",
+    message: "RESET PASSWORD: Password reset successfully",
     data: {},
     status: OK,
   };
@@ -186,7 +178,7 @@ const sendVerificationEmail = trycatch(async (req: Request, res: Response) => {
 
   const response = {
     success: true,
-    message: "Please check your mail",
+    message: "SEND VERIFICATION EMAIL: Please check your mail",
     data: token,
     status: OK,
   };
@@ -203,36 +195,30 @@ const verifyEmail = trycatch(async (req: Request, res: Response) => {
     TOKEN_TYPE.VERIFY_EMAIL
   );
 
-  const responseUser = await getRecord<DbUser>(User, tokenDoc.user.toString());
-  if (!responseUser.success) {
-    return responseHandler(responseUser, res);
-  }
+  await findOneRecord<DbUser>(User, "VERIFT EMAIL", {
+    _id: tokenDoc.user,
+  });
 
   await Token.deleteMany({
     user: tokenDoc.user,
     type: TOKEN_TYPE.VERIFY_EMAIL,
   });
 
-  const updateResponse = await updateRecord<DbUser>(
+  const response = await updateRecord<DbUser>(
     User,
+    "VERIFY EMAIL",
     {
       isEmailVerified: true,
     },
     tokenDoc.user.toString(),
     { new: true }
   );
-  if (!updateResponse.success) {
-    return responseHandler(updateResponse, res);
-  }
 
-  const response = {
-    success: updateResponse.success,
-    message: "Email has been verified",
-    data: updateResponse.data,
-    status: updateResponse.status,
-  };
-
-  return responseHandler(response, res);
+  return responseHandler(
+    response,
+    res,
+    "VERIFT EMAIL: Email has been verified"
+  );
 });
 
 export {
