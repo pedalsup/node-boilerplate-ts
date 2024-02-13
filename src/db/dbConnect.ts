@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import config from "@/utils/config";
+import config from "@/config";
 
 const dbConnect = (callback = () => {}) => {
   mongoose

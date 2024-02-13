@@ -1,64 +1,45 @@
 import { Request, Response } from "express";
-import {
-  createRecord,
-  getRecord,
-  removeRecord,
-  updateRecord,
-} from "./common.controller";
-import { User as UserType } from "@/types/user";
+import { getRecord, removeRecord, updateRecord } from "./common.controller";
+import { DbUser } from "@/types/user";
 import { User } from "@/models";
 import { trycatch } from "@/middlewares/trycatch";
+import { generateAuthTokens } from "@/services/token.service";
+import responseHandler from "@/utils/responseHandler";
 
 // GET /user
 const get = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const response = await getRecord<UserType>(User, id);
+  const response = await getRecord<DbUser>(User, id);
 
-  return res.status(response.status).json({
-    success: response.success,
-    message: response.message,
-    data: response.data,
-  });
-});
+  if (id && response.success) {
+    const tokens = await generateAuthTokens(response.data as DbUser);
 
-// POST /user
-const post = trycatch(async (req: Request, res: Response) => {
-  const response = await createRecord<UserType>(User, req.body, {
-    email: req.body.email,
-  });
+    response.data = {
+      user: response.data,
+      tokens,
+    };
+  }
 
-  return res.status(response.status).json({
-    success: response.success,
-    message: response.message,
-    data: response.data,
-  });
+  return responseHandler(response, res);
 });
 
 // PUT /user/:id
 const put = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const response = await updateRecord<UserType>(User, req.body, id, {
+  const response = await updateRecord<DbUser>(User, req.body, id, {
     new: true,
   });
 
-  return res.status(response.status).json({
-    success: response.success,
-    message: response.message,
-    data: response.data,
-  });
+  return responseHandler(response, res);
 });
 
 // DELETE /user/:id
 const remove = trycatch(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const response = await removeRecord<UserType>(User, id);
+  const response = await removeRecord<DbUser>(User, id);
 
-  return res.status(response.status).json({
-    success: response.success,
-    message: response.message,
-    data: response.data,
-  });
+  return responseHandler(response, res);
 });
 
-export { get, post, put, remove };
+export { get, put, remove };

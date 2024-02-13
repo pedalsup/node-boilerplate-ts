@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import responseHandler from "@/utils/responseHandler";
+import { Request, Response, NextFunction, response } from "express";
 import { BAD_REQUEST, NOT_FOUND } from "http-status";
 
-class AppError extends Error {
+export class AppError extends Error {
   statusCode: number;
 
   constructor(statusCode: number, message: string) {
@@ -36,9 +37,13 @@ const errorResponder = (
   _next: NextFunction
 ) => {
   const status = error.statusCode || BAD_REQUEST;
-  res
-    .status(status)
-    .json({ status: false, message: error.message, data: null });
+  const response = {
+    success: false,
+    message: error.message,
+    data: null,
+    status,
+  };
+  return responseHandler(response, res);
 };
 
 const invalidPathHandler = (
@@ -46,12 +51,13 @@ const invalidPathHandler = (
   res: Response,
   _next: NextFunction
 ) => {
-  let message = {
+  const response = {
     success: false,
     message: "Requested API not found",
     data: null,
+    status: NOT_FOUND,
   };
-  res.status(NOT_FOUND).json(message);
+  return responseHandler(response, res);
 };
 
 export { requestLogger, errorLogger, errorResponder, invalidPathHandler };

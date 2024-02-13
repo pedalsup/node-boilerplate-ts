@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
+import { Request } from "express";
+import { DbUser } from "./user";
+import { TOKEN_TYPE } from "./token";
 
-export type StringId = string;
 export type ObjectId = mongoose.Schema.Types.ObjectId;
-export type PrimaryId = string;
-export type StringDate = string;
 
 export interface DbDataBase {
   _id: ObjectId;
@@ -11,16 +11,7 @@ export interface DbDataBase {
   updatedAt: Date;
 }
 
-export interface DataBase {
-  _id: StringId;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface DbData extends DbDataBase {}
-export interface Data extends DataBase {}
-
-export type DataLookup = Pick<Data, "_id">;
 
 export interface GetListResult<T> {
   records: T[];
@@ -38,4 +29,15 @@ export interface Response<T> {
   message: string;
   data: T[] | T | {};
   status: number;
+}
+
+export interface AuthenticatedRequest extends Request {
+  user?: DbUser;
+}
+
+export interface IToken {
+  sub: string;
+  iat: number;
+  exp: number;
+  type: TOKEN_TYPE;
 }

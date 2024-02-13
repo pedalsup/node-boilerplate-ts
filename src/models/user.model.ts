@@ -1,9 +1,27 @@
-import mongoose, { InferSchemaType } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import { collection } from "@/utils/collections";
 import bcrypt from "bcrypt";
-import { DbUser, DbUserPreSave } from "@/types/user";
+import { DbUser } from "@/types/user";
+import { roles } from "@/config/roles";
 
-const schema = new mongoose.Schema<DbUser>(
+interface DbUserPreSave extends DbUser {
+  isModified: (arg0: string) => boolean;
+}
+
+interface IUserMethods {
+  isPasswordMatch(candidatePassword: string): string;
+}
+
+interface UserModel extends Model<DbUser, {}, IUserMethods> {
+  isUserExist(
+    email: string,
+    username: string,
+    address: string,
+    excludeUserId?: string
+  ): Promise<boolean>;
+}
+
+const schema = new mongoose.Schema<DbUser, UserModel, IUserMethods>(
   {
     address: {
       type: String,
@@ -27,19 +45,20 @@ const schema = new mongoose.Schema<DbUser>(
       trim: true,
       unique: true,
     },
+    role: {
+      type: String,
+      enum: roles,
+      default: "user",
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
-
-type UserSchemaType = InferSchemaType<typeof schema>;
-
-const User =
-  mongoose.models[collection.USER] ||
-  mongoose.model<DbUser>(collection.USER, schema);
-
-export { User, UserSchemaType };
 
 // Hash password before saving to database
 schema.pre<DbUserPreSave>("save", async function (next) {
@@ -49,3 +68,35 @@ schema.pre<DbUserPreSave>("save", async function (next) {
   }
   next();
 });
+
+// Check if user exists
+schema.static(
+  "isUserExist",
+  async function isUserExist(
+    email: string,
+    username: string,
+    address: string,
+    excludeUserId?: string
+  ): Promise<boolean> {
+    const user = await this.findOne({
+      email,
+      username,
+      address,
+      _id: { $ne: excludeUserId },
+    });
+
+    return !!user;
+  }
+);
+
+// Compare password
+schema.method(
+  "isPasswordMatch",
+  async function isPasswordMatch(candidatePassword: string): Promise<boolean> {
+    return await bcrypt.compare(candidatePassword, this.password);
+  }
+);
+
+const User = mongoose.model<DbUser, UserModel>(collection.USER, schema);
+
+export { User };

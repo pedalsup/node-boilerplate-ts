@@ -13,6 +13,9 @@ const config = {
   get mongoUri() {
     return process.env.MONGO_URI;
   },
+  get jwtSecret() {
+    return process.env.JWT_SECRET;
+  },
 };
 
 export default config;

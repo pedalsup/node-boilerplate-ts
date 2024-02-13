@@ -7,6 +7,9 @@ import {
   requestLogger,
 } from "./middlewares/errorhandler";
 import publicRoutes from "./routes/public";
+import commonRoutes from "./routes/common";
+import passport from "passport";
+import { jwtStrategy } from "./config/password";
 
 const app = express();
 // parse json request body
@@ -19,15 +22,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.options("*", cors());
 
+// jwt authentication
+app.use(passport.initialize());
+passport.use("jwt", jwtStrategy);
+
 app.use(requestLogger);
 
 // api routes
 app.use("/user", publicRoutes);
 // app.use("/admin", adminRoutes);
-// app.use("/", commonRoutes);
+app.use("/", commonRoutes);
 
 app.use(errorLogger);
 app.use(errorResponder);
 app.use(invalidPathHandler);
 
 export default app;
+
+// define type for body
+// validation
+// JWT Authetication
