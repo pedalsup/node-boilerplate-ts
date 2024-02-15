@@ -3,14 +3,14 @@ interface IResponse {
   status: number;
   success: boolean;
   message: string;
-  data: any;
+  data: unknown;
 }
 
 const responseHandler = (
   response: IResponse,
   res: Response,
   message?: string,
-  data?: any
+  data?: unknown,
 ) =>
   res.status(response.status).json({
     success: response.success,

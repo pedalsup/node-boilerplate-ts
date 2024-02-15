@@ -18,7 +18,7 @@ const register = trycatch(async (req: Request, res: Response) => {
   const isUserExist = await User.isUserExist(
     req.body.email,
     req.body.username,
-    req.body.address
+    req.body.address,
   );
 
   if (isUserExist) {
@@ -134,7 +134,7 @@ const resetPassword = trycatch(async (req: Request, res: Response) => {
 
   const tokenDoc = await verifyToken(
     resetPasswordToken as string,
-    TOKEN_TYPE.RESET_PASSWORD
+    TOKEN_TYPE.RESET_PASSWORD,
   );
 
   const user = await User.findById(tokenDoc.user);
@@ -171,7 +171,7 @@ const resetPassword = trycatch(async (req: Request, res: Response) => {
 // POST /send-verification-email
 const sendVerificationEmail = trycatch(async (req: Request, res: Response) => {
   const token = await generateVerifyEmailToken(
-    (req.user as any)._id.toString()
+    (req.user as any)._id.toString(),
   );
 
   // Logic of send mail
@@ -192,7 +192,7 @@ const verifyEmail = trycatch(async (req: Request, res: Response) => {
 
   const tokenDoc = await verifyToken(
     verifyEmailToken as string,
-    TOKEN_TYPE.VERIFY_EMAIL
+    TOKEN_TYPE.VERIFY_EMAIL,
   );
 
   await findOneRecord<DbUser>(User, "VERIFT EMAIL", {
@@ -211,13 +211,13 @@ const verifyEmail = trycatch(async (req: Request, res: Response) => {
       isEmailVerified: true,
     },
     tokenDoc.user.toString(),
-    { new: true }
+    { new: true },
   );
 
   return responseHandler(
     response,
     res,
-    "VERIFT EMAIL: Email has been verified"
+    "VERIFT EMAIL: Email has been verified",
   );
 });
 

@@ -1,0 +1,17 @@
+.idea
+.history
+.env
+.vscode
+node_modules
+coverage
+reports
+dist
+build
+typed-css.d.ts
+package.json
+package-lock.json
+src/assets/lottie
+charting_library
+datafeeds
+/public
+/yarn.lock

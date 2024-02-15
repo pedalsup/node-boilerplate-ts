@@ -25,7 +25,7 @@ const schema = new mongoose.Schema<DbToken>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Token =

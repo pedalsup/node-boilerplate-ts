@@ -21,11 +21,11 @@ export interface DbUserMethods {
   isPasswordMatch(candidatePassword: string): string;
 }
 
-export interface UserModel extends Model<DbUser, {}, DbUserMethods> {
+export interface UserModel extends Model<DbUser, object, DbUserMethods> {
   isUserExist(
     email: string,
     username: string,
     address: string,
-    excludeUserId?: string
+    excludeUserId?: string,
   ): Promise<boolean>;
 }

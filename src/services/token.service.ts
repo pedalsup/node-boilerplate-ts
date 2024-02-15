@@ -12,7 +12,7 @@ const generateToken = (
   userId: string,
   expires: moment.Moment,
   type: TOKEN_TYPE,
-  secret = config.jwtSecret
+  secret = config.jwtSecret,
 ) => {
   const payload: IToken = {
     sub: userId,
@@ -30,21 +30,21 @@ const generateAuthTokens = async (user: DbUser) => {
   const accessToken = generateToken(
     userId,
     accessTokenExpires,
-    TOKEN_TYPE.ACCESS
+    TOKEN_TYPE.ACCESS,
   );
 
   const refreshTokenExpires = moment().add(2, "days");
   const refreshToken = generateToken(
     userId,
     refreshTokenExpires,
-    TOKEN_TYPE.REFRESH
+    TOKEN_TYPE.REFRESH,
   );
 
   await saveToken(
     refreshToken,
     userId,
     refreshTokenExpires,
-    TOKEN_TYPE.REFRESH
+    TOKEN_TYPE.REFRESH,
   );
 
   return {
@@ -70,14 +70,14 @@ const generateResetPasswordToken = async (email: string) => {
   const resetPasswordToken = generateToken(
     user.id,
     expires,
-    TOKEN_TYPE.RESET_PASSWORD
+    TOKEN_TYPE.RESET_PASSWORD,
   );
 
   await saveToken(
     resetPasswordToken,
     user.id,
     expires,
-    TOKEN_TYPE.RESET_PASSWORD
+    TOKEN_TYPE.RESET_PASSWORD,
   );
 
   return resetPasswordToken;
@@ -94,14 +94,14 @@ const generateVerifyEmailToken = async (id: string) => {
   const verifyEmailToken = generateToken(
     user._id.toString(),
     expires,
-    TOKEN_TYPE.VERIFY_EMAIL
+    TOKEN_TYPE.VERIFY_EMAIL,
   );
 
   await saveToken(
     verifyEmailToken,
     user._id.toString(),
     expires,
-    TOKEN_TYPE.VERIFY_EMAIL
+    TOKEN_TYPE.VERIFY_EMAIL,
   );
 
   return verifyEmailToken;
@@ -111,7 +111,7 @@ const saveToken = async (
   token: string,
   userId: string,
   expires: moment.Moment,
-  type: TOKEN_TYPE
+  type: TOKEN_TYPE,
 ) => {
   const tokenDoc = await Token.create({
     token,

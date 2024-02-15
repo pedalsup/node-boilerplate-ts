@@ -27,7 +27,7 @@ export interface LookupOption {
 export interface Response<T> {
   success: boolean;
   message: string;
-  data: T[] | T | {};
+  data: T[] | T | object;
   status: number;
 }
 

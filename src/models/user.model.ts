@@ -1,4 +1,4 @@
-import mongoose, { Model } from "mongoose";
+import mongoose from "mongoose";
 import { collection } from "@/utils/collections";
 import bcrypt from "bcrypt";
 import { DbUser, DbUserPreSave, DbUserMethods, UserModel } from "@/types/user";
@@ -40,7 +40,7 @@ const schema = new mongoose.Schema<DbUser, UserModel, DbUserMethods>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Hash password before saving to database
@@ -59,7 +59,7 @@ schema.static(
     email: string,
     username: string,
     address: string,
-    excludeUserId?: string
+    excludeUserId?: string,
   ): Promise<boolean> {
     const user = await this.findOne({
       email,
@@ -69,7 +69,7 @@ schema.static(
     });
 
     return !!user;
-  }
+  },
 );
 
 // Compare password
@@ -77,7 +77,7 @@ schema.method(
   "isPasswordMatch",
   async function isPasswordMatch(candidatePassword: string): Promise<boolean> {
     return await bcrypt.compare(candidatePassword, this.password);
-  }
+  },
 );
 
 const User = mongoose.model<DbUser, UserModel>(collection.USER, schema);

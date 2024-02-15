@@ -22,7 +22,7 @@ const findRecord = async <T>(
   log_id: string,
   filterQuery: FilterQuery<T>,
   projection?: ProjectionType<T>,
-  options?: QueryOptions<T>
+  options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const data = await collection.find(filterQuery, projection, options);
 
@@ -43,7 +43,7 @@ const findOneRecord = async <T>(
   log_id: string,
   filterQuery: FilterQuery<T>,
   projection?: ProjectionType<T>,
-  options?: QueryOptions<T>
+  options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const data = await collection.findOne(filterQuery, projection, options);
 
@@ -65,7 +65,7 @@ const createRecord = async <T>(
   payload: T,
   filterQuery?: FilterQuery<T>,
   projection?: ProjectionType<T>,
-  options?: QueryOptions<T>
+  options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   if (filterQuery) {
     const isExist = await collection.findOne(filterQuery, projection, options);
@@ -99,7 +99,7 @@ const updateRecord = async <T>(
   log_id: string,
   payload: UpdateQuery<T>,
   id: ObjectId | any,
-  options?: QueryOptions<T>
+  options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const updatedData = await collection.findByIdAndUpdate(id, payload, options);
 
@@ -119,7 +119,7 @@ const removeRecord = async <T>(
   collection: mongoose.Model<T>,
   log_id: string,
   id: ObjectId | any,
-  options?: QueryOptions<T>
+  options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const deletedData = await collection.findByIdAndDelete(id, options);
 
@@ -139,7 +139,7 @@ const lookupRecord = async <T>(
   collection: mongoose.Model<T>,
   log_id: string,
   pipeline: PipelineStage[],
-  options?: AggregateOptions
+  options?: AggregateOptions,
 ): Promise<Response<T>> => {
   const data = await collection.aggregate(pipeline, options);
 

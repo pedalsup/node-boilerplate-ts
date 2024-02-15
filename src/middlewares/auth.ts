@@ -10,7 +10,7 @@ const verifyCallback =
     req: Request,
     resolve: (value?: unknown) => void,
     reject: (reason?: any) => void,
-    requiredRights: string[]
+    requiredRights: string[],
   ) =>
   async (err: any, user: DbUser, info: any) => {
     if (err || info || !user) {
@@ -41,7 +41,7 @@ const auth =
       passport.authenticate(
         "jwt",
         { session: false },
-        verifyCallback(req, resolve, reject, requiredRights)
+        verifyCallback(req, resolve, reject, requiredRights),
       )(req, res, next);
     })
       .then(() => next())

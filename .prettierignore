@@ -1,0 +1,7 @@
+# Add files here to ignore them from prettier formatting
+build
+/coverage
+/node_module
+charting_library
+/charting_library
+/.vscode

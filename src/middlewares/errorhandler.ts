@@ -1,5 +1,5 @@
 import responseHandler from "@/utils/responseHandler";
-import { Request, Response, NextFunction, response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { BAD_REQUEST, NOT_FOUND } from "http-status";
 
 export class AppError extends Error {
@@ -24,18 +24,13 @@ const errorLogger = (
   error: Error,
   _req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   console.log(`error ${error.message}`);
   next(error);
 };
 
-const errorResponder = (
-  error: AppError,
-  _req: Request,
-  res: Response,
-  _next: NextFunction
-) => {
+const errorResponder = (error: AppError, _req: Request, res: Response) => {
   const status = error.statusCode || BAD_REQUEST;
   const response = {
     success: false,
@@ -46,11 +41,7 @@ const errorResponder = (
   return responseHandler(response, res);
 };
 
-const invalidPathHandler = (
-  _req: Request,
-  res: Response,
-  _next: NextFunction
-) => {
+const invalidPathHandler = (_req: Request, res: Response) => {
   const response = {
     success: false,
     message: "API: Requested API not found",
