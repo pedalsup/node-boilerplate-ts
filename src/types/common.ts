@@ -36,7 +36,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export interface IToken {
-  sub: string;
+  sub: Partial<DbUser>;
   iat: number;
   exp: number;
   type: TOKEN_TYPE;

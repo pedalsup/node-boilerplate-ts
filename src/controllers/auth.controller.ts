@@ -32,7 +32,6 @@ const register = trycatch(async (req: Request, res: Response) => {
     return responseHandler(response, res);
   }
 
-  // const user = await User.create(req.body);
   const response = await createRecord<DbUser>(User, "REGISTER", req.body);
 
   const tokens = await generateAuthTokens(response.data as DbUser);
@@ -170,9 +169,9 @@ const resetPassword = trycatch(async (req: Request, res: Response) => {
 
 // POST /send-verification-email
 const sendVerificationEmail = trycatch(async (req: Request, res: Response) => {
-  const token = await generateVerifyEmailToken(
-    (req.user as any)._id.toString(),
-  );
+  const userId = (req.user as DbUser)._id;
+
+  const token = await generateVerifyEmailToken(userId);
 
   // Logic of send mail
 

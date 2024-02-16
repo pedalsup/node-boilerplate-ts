@@ -30,7 +30,13 @@ const errorLogger = (
   next(error);
 };
 
-const errorResponder = (error: AppError, _req: Request, res: Response) => {
+const errorResponder = (
+  error: AppError,
+  _req: Request,
+  res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction,
+) => {
   const status = error.statusCode || BAD_REQUEST;
   const response = {
     success: false,

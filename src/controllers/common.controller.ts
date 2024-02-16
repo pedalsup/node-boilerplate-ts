@@ -98,7 +98,7 @@ const updateRecord = async <T>(
   collection: mongoose.Model<T>,
   log_id: string,
   payload: UpdateQuery<T>,
-  id: ObjectId | any,
+  id: ObjectId | string,
   options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const updatedData = await collection.findByIdAndUpdate(id, payload, options);
@@ -118,7 +118,7 @@ const updateRecord = async <T>(
 const removeRecord = async <T>(
   collection: mongoose.Model<T>,
   log_id: string,
-  id: ObjectId | any,
+  id: ObjectId | string,
   options?: QueryOptions<T>,
 ): Promise<Response<T>> => {
   const deletedData = await collection.findByIdAndDelete(id, options);

@@ -9,7 +9,7 @@ import {
 import publicRoutes from "./routes/public";
 import commonRoutes from "./routes/common";
 import passport from "passport";
-import { jwtStrategy } from "./config/password";
+import { jwtStrategy } from "./config/passport";
 
 const app = express();
 // parse json request body
